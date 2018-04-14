@@ -6,7 +6,8 @@ import tensorflow as tf
 from sandbox.rocky.tf.samplers.batch_sampler import BatchSampler
 from sandbox.rocky.tf.samplers.vectorized_sampler import VectorizedSampler
 from rllab.sampler.utils import rollout
-
+from sandbox.rocky.tf.plotter import plotter
+from threading import Thread
 
 class BatchPolopt(RLAlgorithm):
     """
@@ -88,8 +89,11 @@ class BatchPolopt(RLAlgorithm):
 
     def start_worker(self):
         self.sampler.start_worker()
+        if self.plot:
+            plotter.init_plot(self.env, self.policy)
 
     def shutdown_worker(self):
+        plotter._shutdown_worker()
         self.sampler.shutdown_worker()
 
     def obtain_samples(self, itr):
@@ -102,8 +106,18 @@ class BatchPolopt(RLAlgorithm):
         created_session = True if (sess is None) else False
         if sess is None:
             sess = tf.Session()
+        thread = Thread(target=self._train, kwargs={'sess':sess, 'created_session':created_session})
+        thread.start()
+        if self.plot:
+            while True:
+                rollout(self.env, self.policy, animated=True, max_path_length=self.max_path_length)
+                if self.pause_for_plot:
+                    input("Plotting evaluation run: Press Enter to continue...")
+        
+    def _train(self, sess, created_session):
+        if created_session:
             sess.__enter__()
-            
+
         sess.run(tf.global_variables_initializer())
         self.start_worker()
         start_time = time.time()
@@ -128,14 +142,14 @@ class BatchPolopt(RLAlgorithm):
                 logger.record_tabular('ItrTime', time.time() - itr_start_time)
                 logger.dump_tabular(with_prefix=False)
                 if self.plot:
-                    rollout(self.env, self.policy, animated=True, max_path_length=self.max_path_length)
+                    plotter.update_plot(self.policy, self.max_path_length)
                     if self.pause_for_plot:
                         input("Plotting evaluation run: Press Enter to "
                               "continue...")
         self.shutdown_worker()
         if created_session:
             sess.close()
-
+        
     def log_diagnostics(self, paths):
         self.env.log_diagnostics(paths)
         self.policy.log_diagnostics(paths)
@@ -157,4 +171,3 @@ class BatchPolopt(RLAlgorithm):
 
     def optimize_policy(self, itr, samples_data):
         raise NotImplementedError
-
