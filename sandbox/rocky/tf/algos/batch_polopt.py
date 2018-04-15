@@ -95,7 +95,6 @@ class BatchPolopt(RLAlgorithm):
             rollout(self.env, self.policy, animated=True, max_path_length=self.max_path_length)
 
     def shutdown_worker(self):
-        plotter._shutdown_worker()
         self.sampler.shutdown_worker()
 
     def obtain_samples(self, itr):
