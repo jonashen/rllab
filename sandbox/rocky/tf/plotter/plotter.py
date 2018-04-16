@@ -37,11 +37,9 @@ def _worker_start():
                         break
                     elif 'update' in msgs:
                         env, policy = msgs['update']
-                        # policy = pickle.loads(policy)
                         # env.start_viewer()
                     elif 'demo' in msgs:
                         param_values, max_length = msgs['demo']
-                        # param_values = pickle.loads(param_values)
                         policy.set_param_values(param_values)
                         if not sess._closed:
                             rollout(env, policy, max_path_length=max_length, animated=True, speedup=5)
@@ -54,7 +52,7 @@ def _worker_start():
 
 
 def _shutdown_worker():
-    if process:
+    if process or queue:
         queue.put(['stop'])
         queue.task_done()
         queue.join()
@@ -72,8 +70,9 @@ def init_worker():
 
 
 def init_plot(env, policy):
+    if queue is not None:
+        _shutdown_worker().join()
     init_worker()
-    # queue.put(['update', env, pickle.dumps(policy)])
     queue.put(['update', env, policy])
     queue.task_done()
 
