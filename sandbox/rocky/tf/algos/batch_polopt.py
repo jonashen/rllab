@@ -90,9 +90,9 @@ class BatchPolopt(RLAlgorithm):
     def start_worker(self):
         self.sampler.start_worker()
         if self.plot:
-            plotter.init_plot(self.env, self.policy)
+            plotter.init_plot(self.env, self.policy, self.max_path_length)
             # Call rollout once to display the window
-            rollout(self.env, self.policy, animated=True, max_path_length=self.max_path_length)
+            # rollout(self.env, self.policy, animated=True, max_path_length=self.max_path_length)
 
     def shutdown_worker(self):
         self.sampler.shutdown_worker()

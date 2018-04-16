@@ -69,7 +69,10 @@ def init_worker():
     atexit.register(_shutdown_worker)
 
 
-def init_plot(env, policy):
+def init_plot(env, policy, max_path_length):
+    # Call rollout once to display the window
+    rollout(env, policy, animated=True, max_path_length=max_path_length)
+    
     if queue is not None:
         _shutdown_worker().join()
     init_worker()
