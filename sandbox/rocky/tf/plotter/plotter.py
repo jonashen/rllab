@@ -61,20 +61,18 @@ def _shutdown_worker():
 
 def init_worker():
     global process, queue, sess
-    queue = Queue()
-    sess = tf.get_default_session()
-    process = Thread(target=_worker_start)
-    process.daemon = True
-    process.start()
-    atexit.register(_shutdown_worker)
-
+    if queue is None:
+        queue = Queue()
+        sess = tf.get_default_session()
+        atexit.register(_shutdown_worker)
+        process = Thread(target=_worker_start)
+        process.daemon = True
+        process.start()
 
 def init_plot(env, policy, max_path_length):
     # Call rollout once to display the window
     rollout(env, policy, animated=True, max_path_length=max_path_length)
-    
-    if queue is not None:
-        _shutdown_worker().join()
+
     init_worker()
     queue.put(['update', env, policy])
     queue.task_done()
