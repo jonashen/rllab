@@ -3,7 +3,7 @@ import ctypes
 from . import mjconstants as C
 
 from .mjtypes import *  # import all for backwards compatibility
-from .mjlib import mjlib
+from mujoco_py import functions
 
 class MjError(Exception):
     pass
@@ -16,7 +16,7 @@ def register_license(file_path):
     this does not check the return code, per usage example at simulate.cpp
     and test.cpp.
     """
-    result = mjlib.mj_activate(file_path)
+    result = functions.mj_activate(file_path)
     return result
 
 
@@ -30,12 +30,12 @@ class MjModel(MjModelWrapper):
 
     def __init__(self, xml_path):
         buf = create_string_buffer(1000)
-        model_ptr = mjlib.mj_loadXML(xml_path, None, buf, 1000)
+        model_ptr = functions.mj_loadXML(xml_path, None, buf, 1000)
         if len(buf.value) > 0:
             super(MjModel, self).__init__(None)
             raise MjError(buf.value)
         super(MjModel, self).__init__(model_ptr)
-        data_ptr = mjlib.mj_makeData(model_ptr)
+        data_ptr = functions.mj_makeData(model_ptr)
         fields = ["nq","nv","na","nu","nbody","nmocap","nuserdata","nsensordata","njnt","ngeom","nsite","ncam","nlight","ntendon","nwrap","nM","njmax","nemax"]
         sizes = dict2(**{ k: getattr(self, k) for k in fields })
         data = MjData(data_ptr, sizes)
@@ -44,9 +44,9 @@ class MjModel(MjModelWrapper):
         self.forward()
 
     def forward(self):
-        mjlib.mj_forward(self.ptr, self.data.ptr)
-        mjlib.mj_sensor(self.ptr, self.data.ptr)
-        mjlib.mj_energy(self.ptr, self.data.ptr)
+        functions.mj_forward(self.ptr, self.data.ptr)
+        functions.mj_sensor(self.ptr, self.data.ptr)
+        functions.mj_energy(self.ptr, self.data.ptr)
         self._body_comvels = None
 
     @property
@@ -61,7 +61,7 @@ class MjModel(MjModelWrapper):
         mass = self.body_mass.flatten()
         for i in range(self.nbody):
             # body velocity
-            mjlib.mj_objectVelocity(
+            functions.mj_objectVelocity(
                 self.ptr, self.data.ptr, C.mjOBJ_BODY, i,
                 body_vels[i].ctypes.data_as(POINTER(c_double)), 0
             )
@@ -81,13 +81,13 @@ class MjModel(MjModelWrapper):
         return lin_moms / mass.reshape((-1, 1))
 
     def step(self):
-        mjlib.mj_step(self.ptr, self.data.ptr)
+        functions.mj_step(self.ptr, self.data.ptr)
 
     def __del__(self):
         if self._wrapped is not None:
-            # At the very end of the process, mjlib can be unloaded before we are deleted.
+            # At the very end of the process, functions can be unloaded before we are deleted.
             # At that point, it's okay to leak this memory.
-            if mjlib: mjlib.mj_deleteModel(self._wrapped)
+            if functions: functions.mj_deleteModel(self._wrapped)
 
     @property
     def body_names(self):
@@ -106,7 +106,7 @@ class MjModel(MjModelWrapper):
 
         If dof is 4 or 7, then the last 4 degrees of freedom in qpos represent a
         unit quaternion."""
-        jntadr = mjlib.mj_name2id(self.ptr, C.mjOBJ_JOINT, joint_name)
+        jntadr = functions.mj_name2id(self.ptr, C.mjOBJ_JOINT, joint_name)
         assert(jntadr >= 0)
         dofmap = {C.mjJNT_FREE:  7,
                   C.mjJNT_BALL:  4,
@@ -149,9 +149,9 @@ class MjData(MjDataWrapper):
 
     def __del__(self):
         if self._wrapped is not None:
-            # At the very end of the process, mjlib can be unloaded before we are deleted.
+            # At the very end of the process, functions can be unloaded before we are deleted.
             # At that point, it's okay to leak this memory.
-            if mjlib: mjlib.mj_deleteData(self._wrapped)
+            if functions: functions.mj_deleteData(self._wrapped)
 
     @property
     def contact(self):

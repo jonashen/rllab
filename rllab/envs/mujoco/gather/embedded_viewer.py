@@ -1,6 +1,6 @@
 from rllab.mujoco_py import glfw, mjcore
 import rllab.mujoco_py.mjconstants as C
-from rllab.mujoco_py.mjlib import mjlib
+from mujoco_py import functions
 from ctypes import byref
 import ctypes
 from threading import Lock
@@ -40,9 +40,9 @@ class EmbeddedViewer(object):
             self.data = None
         if self.running:
             if model:
-                mjlib.mjr_makeContext(model.ptr, byref(self.con), 150)
+                functions.mjr_makeContext(model.ptr, byref(self.con), 150)
             else:
-                mjlib.mjr_makeContext(None, byref(self.con), 150)
+                functions.mjr_makeContext(None, byref(self.con), 150)
             self.render()
         if model:
             self.autoscale()
@@ -56,7 +56,7 @@ class EmbeddedViewer(object):
         self.cam.trackbodyid = -1
         if self.window:
             width, height = glfw.get_framebuffer_size(self.window)
-            mjlib.mjv_updateCameraPose(byref(self.cam), width * 1.0 / height)
+            functions.mjv_updateCameraPose(byref(self.cam), width * 1.0 / height)
 
     def get_rect(self):
         rect = mjcore.MJRRECT(0, 0, 0, 0)
@@ -72,14 +72,14 @@ class EmbeddedViewer(object):
     def render(self):
         rect = self.get_rect()
         arr = (ctypes.c_double * 3)(0, 0, 0)
-        mjlib.mjv_makeGeoms(
+        functions.mjv_makeGeoms(
             self.model.ptr, self.data.ptr, byref(self.objects),
             byref(self.vopt), mjCAT_ALL, 0, None, None,
             ctypes.cast(arr, ctypes.POINTER(ctypes.c_double)))
-        mjlib.mjv_setCamera(self.model.ptr, self.data.ptr, byref(self.cam))
-        mjlib.mjv_updateCameraPose(
+        functions.mjv_setCamera(self.model.ptr, self.data.ptr, byref(self.cam))
+        functions.mjv_updateCameraPose(
             byref(self.cam), rect.width * 1.0 / rect.height)
-        mjlib.mjr_render(0, rect, byref(self.objects), byref(
+        functions.mjr_render(0, rect, byref(self.objects), byref(
             self.ropt), byref(self.cam.pose), byref(self.con))
 
     def render_internal(self):
@@ -99,19 +99,19 @@ class EmbeddedViewer(object):
 
         self.window = window
 
-        mjlib.mjv_makeObjects(byref(self.objects), 1000)
+        functions.mjv_makeObjects(byref(self.objects), 1000)
 
-        mjlib.mjv_defaultCamera(byref(self.cam))
-        mjlib.mjv_defaultOption(byref(self.vopt))
-        mjlib.mjr_defaultOption(byref(self.ropt))
+        functions.mjv_defaultCamera(byref(self.cam))
+        functions.mjv_defaultOption(byref(self.vopt))
+        functions.mjr_defaultOption(byref(self.ropt))
 
-        mjlib.mjr_defaultContext(byref(self.con))
+        functions.mjr_defaultContext(byref(self.con))
 
         if self.model:
-            mjlib.mjr_makeContext(self.model.ptr, byref(self.con), 150)
+            functions.mjr_makeContext(self.model.ptr, byref(self.con), 150)
             self.autoscale()
         else:
-            mjlib.mjr_makeContext(None, byref(self.con), 150)
+            functions.mjr_makeContext(None, byref(self.con), 150)
 
     def handle_mouse_move(self, window, xpos, ypos):
 
@@ -149,7 +149,7 @@ class EmbeddedViewer(object):
 
         self.gui_lock.acquire()
 
-        mjlib.mjv_moveCamera(action, dx, dy, byref(self.cam), width, height)
+        functions.mjv_moveCamera(action, dx, dy, byref(self.cam), width, height)
 
         self.gui_lock.release()
 
@@ -191,7 +191,7 @@ class EmbeddedViewer(object):
 
         # scroll
         self.gui_lock.acquire()
-        mjlib.mjv_moveCamera(C.MOUSE_ZOOM, 0, (-20 * y_offset),
+        functions.mjv_moveCamera(C.MOUSE_ZOOM, 0, (-20 * y_offset),
                              byref(self.cam), width, height)
         self.gui_lock.release()
 
@@ -207,6 +207,6 @@ class EmbeddedViewer(object):
 
     def finish(self):
         glfw.terminate()
-        mjlib.mjr_freeContext(byref(self.con))
-        mjlib.mjv_freeObjects(byref(self.objects))
+        functions.mjr_freeContext(byref(self.con))
+        functions.mjv_freeObjects(byref(self.objects))
         self.running = False

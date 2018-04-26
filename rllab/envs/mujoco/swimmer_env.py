@@ -24,13 +24,13 @@ class SwimmerEnv(MujocoEnv, Serializable):
 
     def get_current_obs(self):
         return np.concatenate([
-            self.model.data.qpos.flat,
-            self.model.data.qvel.flat,
+            self.sim.data.qpos.flat,
+            self.sim.data.qvel.flat,
             self.get_body_com("torso").flat,
         ]).reshape(-1)
 
     def get_ori(self):
-        return self.model.data.qpos[self.__class__.ORI_IND]
+        return self.sim.data.qpos[self.__class__.ORI_IND]
 
     def step(self, action):
         self.forward_dynamics(action)

@@ -14,8 +14,9 @@ from rllab.envs.mujoco.gather.embedded_viewer import EmbeddedViewer
 from rllab.envs.mujoco.mujoco_env import MODEL_DIR, BIG
 from rllab.misc import autoargs
 from rllab.misc.overrides import overrides
-from rllab.mujoco_py import MjViewer, MjModel, mjcore, mjlib, \
+from rllab.mujoco_py import MjViewer, MjModel, mjcore, \
     mjextra, glfw
+from mujoco_py import functions
 
 APPLE = 0
 BOMB = 1
@@ -60,7 +61,7 @@ class GatherViewer(MjViewer):
     def render(self):
         super(GatherViewer, self).render()
         tmpobjects = mjcore.MJVOBJECTS()
-        mjlib.mjlib.mjv_makeObjects(byref(tmpobjects), 1000)
+        functions.mjv_makeObjects(byref(tmpobjects), 1000)
         for obj in self.env.objects:
             x, y, typ = obj
             # print x, y
@@ -80,9 +81,9 @@ class GatherViewer(MjViewer):
                 mjextra.append_objects(
                     tmpobjects, self.red_ball_renderer.objects)
         mjextra.append_objects(tmpobjects, self.objects)
-        mjlib.mjlib.mjv_makeLights(
+        functions.mjv_makeLights(
             self.model.ptr, self.data.ptr, byref(tmpobjects))
-        mjlib.mjlib.mjr_render(0, self.get_rect(), byref(tmpobjects), byref(
+        functions.mjr_render(0, self.get_rect(), byref(tmpobjects), byref(
             self.ropt), byref(self.cam.pose), byref(self.con))
 
         try:

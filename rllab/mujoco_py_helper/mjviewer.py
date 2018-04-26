@@ -5,7 +5,7 @@ from threading import Lock
 import os
 
 from . import mjcore, mjconstants, glfw
-from .mjlib import mjlib
+from mujoco_py import functions
 import numpy as np
 import OpenGL.GL as gl
 
@@ -64,9 +64,9 @@ class MjViewer(object):
             self.data = None
         if self.running:
             if model:
-                mjlib.mjr_makeContext(model.ptr, byref(self.con), 150)
+                functions.mjr_makeContext(model.ptr, byref(self.con), 150)
             else:
-                mjlib.mjr_makeContext(None, byref(self.con), 150)
+                functions.mjr_makeContext(None, byref(self.con), 150)
             self.render()
         if model:
             self.autoscale()
@@ -79,7 +79,7 @@ class MjViewer(object):
         self.cam.camid = -1
         self.cam.trackbodyid = 1
         width, height = self.get_dimensions()
-        mjlib.mjv_updateCameraPose(byref(self.cam), width*1.0/height)
+        functions.mjv_updateCameraPose(byref(self.cam), width*1.0/height)
 
     def get_rect(self):
         rect = mjcore.MJRRECT(0, 0, 0, 0)
@@ -93,14 +93,14 @@ class MjViewer(object):
         rect = self.get_rect()
         arr = (ctypes.c_double*3)(0, 0, 0)
 
-        mjlib.mjv_makeGeoms(self.model.ptr, self.data.ptr, byref(self.objects), byref(self.vopt), mjCAT_ALL, 0, None, None, ctypes.cast(arr, ctypes.POINTER(ctypes.c_double)))
-        mjlib.mjv_makeLights(self.model.ptr, self.data.ptr, byref(self.objects))
+        functions.mjv_makeGeoms(self.model.ptr, self.data.ptr, byref(self.objects), byref(self.vopt), mjCAT_ALL, 0, None, None, ctypes.cast(arr, ctypes.POINTER(ctypes.c_double)))
+        functions.mjv_makeLights(self.model.ptr, self.data.ptr, byref(self.objects))
 
-        mjlib.mjv_setCamera(self.model.ptr, self.data.ptr, byref(self.cam))
+        functions.mjv_setCamera(self.model.ptr, self.data.ptr, byref(self.cam))
 
-        mjlib.mjv_updateCameraPose(byref(self.cam), rect.width*1.0/rect.height)
+        functions.mjv_updateCameraPose(byref(self.cam), rect.width*1.0/rect.height)
 
-        mjlib.mjr_render(0, rect, byref(self.objects), byref(self.ropt), byref(self.cam.pose), byref(self.con))
+        functions.mjr_render(0, rect, byref(self.objects), byref(self.ropt), byref(self.cam.pose), byref(self.con))
 
         self.gui_lock.release()
 
@@ -207,19 +207,19 @@ class MjViewer(object):
 
         self.window = window
 
-        mjlib.mjv_makeObjects(byref(self.objects), 1000)
+        functions.mjv_makeObjects(byref(self.objects), 1000)
 
-        mjlib.mjv_defaultCamera(byref(self.cam))
-        mjlib.mjv_defaultOption(byref(self.vopt))
-        mjlib.mjr_defaultOption(byref(self.ropt))
+        functions.mjv_defaultCamera(byref(self.cam))
+        functions.mjv_defaultOption(byref(self.vopt))
+        functions.mjr_defaultOption(byref(self.ropt))
 
-        mjlib.mjr_defaultContext(byref(self.con))
+        functions.mjr_defaultContext(byref(self.con))
 
         if self.model:
-            mjlib.mjr_makeContext(self.model.ptr, byref(self.con), 150)
+            functions.mjr_makeContext(self.model.ptr, byref(self.con), 150)
             self.autoscale()
         else:
-            mjlib.mjr_makeContext(None, byref(self.con), 150)
+            functions.mjr_makeContext(None, byref(self.con), 150)
 
         glfw.set_cursor_pos_callback(window, self.handle_mouse_move)
         glfw.set_mouse_button_callback(window, self.handle_mouse_button)
@@ -261,7 +261,7 @@ class MjViewer(object):
 
         self.gui_lock.acquire()
 
-        mjlib.mjv_moveCamera(action, dx, dy, byref(self.cam), width, height)
+        functions.mjv_moveCamera(action, dx, dy, byref(self.cam), width, height)
 
         self.gui_lock.release()
 
@@ -302,7 +302,7 @@ class MjViewer(object):
 
         # scroll
         self.gui_lock.acquire()
-        mjlib.mjv_moveCamera(mjconstants.MOUSE_ZOOM, 0, (-20*y_offset), byref(self.cam), width, height)
+        functions.mjv_moveCamera(mjconstants.MOUSE_ZOOM, 0, (-20*y_offset), byref(self.cam), width, height)
         self.gui_lock.release()
 
     def should_stop(self):
@@ -322,6 +322,6 @@ class MjViewer(object):
         if gl.glIsRenderbuffer(self._rbo):
             gl.glDeleteRenderbuffers(1, int(self._rbo))
 
-        mjlib.mjr_freeContext(byref(self.con))
-        mjlib.mjv_freeObjects(byref(self.objects))
+        functions.mjr_freeContext(byref(self.con))
+        functions.mjv_freeObjects(byref(self.objects))
         self.running = False
