@@ -37,10 +37,10 @@ class HopperEnv(MujocoEnv, Serializable):
     @overrides
     def get_current_obs(self):
         return np.concatenate([
-            self.model.data.qpos[0:1].flat,
-            self.model.data.qpos[2:].flat,
-            np.clip(self.model.data.qvel, -10, 10).flat,
-            np.clip(self.model.data.qfrc_constraint, -10, 10).flat,
+            self.sim.data.qpos[0:1].flat,
+            self.sim.data.qpos[2:].flat,
+            np.clip(self.sim.data.qvel, -10, 10).flat,
+            np.clip(self.sim.data.qfrc_constraint, -10, 10).flat,
             self.get_body_com("torso").flat,
         ])
 

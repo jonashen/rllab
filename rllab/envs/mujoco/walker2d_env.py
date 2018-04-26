@@ -28,8 +28,8 @@ class Walker2DEnv(MujocoEnv, Serializable):
 
     def get_current_obs(self):
         return np.concatenate([
-            self.model.data.qpos.flat,
-            self.model.data.qvel.flat,
+            self.sim.data.qpos.flat,
+            self.sim.data.qvel.flat,
             self.get_body_com("torso").flat,
         ])
 
@@ -43,7 +43,7 @@ class Walker2DEnv(MujocoEnv, Serializable):
             np.sum(np.square(action / scaling))
         forward_reward = self.get_body_comvel("torso")[0]
         reward = forward_reward - ctrl_cost
-        qpos = self.model.data.qpos
+        qpos = self.sim.data.qpos
         done = not (qpos[0] > 0.8 and qpos[0] < 2.0
                     and qpos[2] > -1.0 and qpos[2] < 1.0)
         return Step(next_obs, reward, done)

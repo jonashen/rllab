@@ -72,10 +72,10 @@ class MjViewer(object):
             self.autoscale()
 
     def autoscale(self):
-        self.cam.lookat[0] = self.model.stat.center[0]
-        self.cam.lookat[1] = self.model.stat.center[1]
-        self.cam.lookat[2] = self.model.stat.center[2]
-        self.cam.distance = 0.5 * self.model.stat.extent
+        self.cam.lookat[0] = self.sim.stat.center[0]
+        self.cam.lookat[1] = self.sim.stat.center[1]
+        self.cam.lookat[2] = self.sim.stat.center[2]
+        self.cam.distance = 0.5 * self.sim.stat.extent
         self.cam.camid = -1
         self.cam.trackbodyid = 1
         width, height = self.get_dimensions()
@@ -93,10 +93,10 @@ class MjViewer(object):
         rect = self.get_rect()
         arr = (ctypes.c_double*3)(0, 0, 0)
 
-        functions.mjv_makeGeoms(self.model.ptr, self.data.ptr, byref(self.objects), byref(self.vopt), mjCAT_ALL, 0, None, None, ctypes.cast(arr, ctypes.POINTER(ctypes.c_double)))
-        functions.mjv_makeLights(self.model.ptr, self.data.ptr, byref(self.objects))
+        functions.mjv_makeGeoms(self.sim.ptr, self.data.ptr, byref(self.objects), byref(self.vopt), mjCAT_ALL, 0, None, None, ctypes.cast(arr, ctypes.POINTER(ctypes.c_double)))
+        functions.mjv_makeLights(self.sim.ptr, self.data.ptr, byref(self.objects))
 
-        functions.mjv_setCamera(self.model.ptr, self.data.ptr, byref(self.cam))
+        functions.mjv_setCamera(self.sim.ptr, self.data.ptr, byref(self.cam))
 
         functions.mjv_updateCameraPose(byref(self.cam), rect.width*1.0/rect.height)
 
@@ -216,7 +216,7 @@ class MjViewer(object):
         functions.mjr_defaultContext(byref(self.con))
 
         if self.model:
-            functions.mjr_makeContext(self.model.ptr, byref(self.con), 150)
+            functions.mjr_makeContext(self.sim.ptr, byref(self.con), 150)
             self.autoscale()
         else:
             functions.mjr_makeContext(None, byref(self.con), 150)

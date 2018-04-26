@@ -20,7 +20,7 @@ class PointEnv(MujocoEnv, Serializable):
         Serializable.quick_init(self, locals())
 
     def step(self, action):
-        qpos = np.copy(self.model.data.qpos)
+        qpos = np.copy(self.sim.data.qpos)
         qpos[2, 0] += action[1]
         ori = qpos[2, 0]
         # compute increment in each direction
@@ -29,21 +29,21 @@ class PointEnv(MujocoEnv, Serializable):
         # ensure that the robot is within reasonable range
         qpos[0, 0] = np.clip(qpos[0, 0] + dx, -7, 7)
         qpos[1, 0] = np.clip(qpos[1, 0] + dy, -7, 7)
-        self.model.data.qpos = qpos
-        self.model.forward()
+        self.sim.data.qpos = qpos
+        self.sim.forward()
         next_obs = self.get_current_obs()
         return Step(next_obs, 0, False)
 
     def get_xy(self):
-        qpos = self.model.data.qpos
+        qpos = self.sim.data.qpos
         return qpos[0, 0], qpos[1, 0]
 
     def set_xy(self, xy):
-        qpos = np.copy(self.model.data.qpos)
+        qpos = np.copy(self.sim.data.qpos)
         qpos[0, 0] = xy[0]
         qpos[1, 0] = xy[1]
-        self.model.data.qpos = qpos
-        self.model.forward()
+        self.sim.data.qpos = qpos
+        self.sim.forward()
 
     @overrides
     def action_from_key(self, key):

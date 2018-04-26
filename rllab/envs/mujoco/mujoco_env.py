@@ -240,7 +240,7 @@ class MujocoEnv(Env):
     def get_body_comvel(self, body_name):
         # idx = self.model.body_names.index(body_name)
         # return self.model.body_comvels[idx]
-        return self.data.get_body_xvelr(body_name)
+        return self.data.get_body_xvelp(body_name)
 
     def print_stats(self):
         super(MujocoEnv, self).print_stats()

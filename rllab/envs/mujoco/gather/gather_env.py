@@ -82,7 +82,7 @@ class GatherViewer(MjViewer):
                     tmpobjects, self.red_ball_renderer.objects)
         mjextra.append_objects(tmpobjects, self.objects)
         functions.mjv_makeLights(
-            self.model.ptr, self.data.ptr, byref(tmpobjects))
+            self.sim.ptr, self.data.ptr, byref(tmpobjects))
         functions.mjr_render(0, self.get_rect(), byref(tmpobjects), byref(
             self.ropt), byref(self.cam.pose), byref(self.con))
 
@@ -404,7 +404,7 @@ class GatherEnv(ProxyEnv, Serializable):
             return obj.get_ori()
         except (NotImplementedError, AttributeError) as e:
             pass
-        return self.wrapped_env.model.data.qpos[self.__class__.ORI_IND]
+        return self.wrapped_env.sim.data.qpos[self.__class__.ORI_IND]
 
     @overrides
     def log_diagnostics(self, paths, log_prefix='Gather', *args, **kwargs):

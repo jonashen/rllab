@@ -211,7 +211,7 @@ class MazeEnv(ProxyEnv, Serializable):
             return obj.get_ori()
         except (NotImplementedError, AttributeError) as e:
             pass
-        return self.wrapped_env.model.data.qpos[self.__class__.ORI_IND]
+        return self.wrapped_env.sim.data.qpos[self.__class__.ORI_IND]
 
     def reset(self):
         self.wrapped_env.reset()

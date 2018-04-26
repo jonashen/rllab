@@ -34,7 +34,7 @@ class SimpleHumanoidEnv(MujocoEnv, Serializable):
         Serializable.quick_init(self, locals())
 
     def get_current_obs(self):
-        data = self.model.data
+        data = self.sim.data
         return np.concatenate([
             data.qpos.flat,
             data.qvel.flat,
@@ -43,8 +43,8 @@ class SimpleHumanoidEnv(MujocoEnv, Serializable):
         ])
 
     def _get_com(self):
-        data = self.model.data
-        mass = self.model.body_mass
+        data = self.sim.data
+        mass = self.sim.body_mass
         xpos = data.xipos
         return (np.sum(mass * xpos, 0) / np.sum(mass))[0]
 
@@ -53,7 +53,7 @@ class SimpleHumanoidEnv(MujocoEnv, Serializable):
         next_obs = self.get_current_obs()
 
         alive_bonus = self.alive_bonus
-        data = self.model.data
+        data = self.sim.data
 
         comvel = self.get_body_comvel("torso")
 
