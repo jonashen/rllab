@@ -1,8 +1,10 @@
 import atexit
 from queue import Empty
-from multiprocessing import Process, Queue
+# from threading import Thread
+from multiprocessing import Queue, Process
 from rllab.sampler.utils import rollout
 import numpy as np
+import pickle as pickle
 
 __all__ = [
     'init_worker',
@@ -13,11 +15,11 @@ __all__ = [
 process = None
 queue = None
 
-
 def _worker_start():
     env = None
     policy = None
     max_length = None
+    global queue, process
     try:
         while True:
             msgs = {}
@@ -45,21 +47,21 @@ def _worker_start():
 
 
 def _shutdown_worker():
-    if process:
+    if process or queue:
         queue.put(['stop'])
-        queue.close()
         process.join()
 
 
 def init_worker():
     global process, queue
-    queue = Queue()
-    process = Process(target=_worker_start)
-    process.start()
-    atexit.register(_shutdown_worker)
+    if queue is None:
+        queue = Queue()
+        atexit.register(_shutdown_worker)
+        process = Process(target=_worker_start)
+        process.start()
 
-
-def init_plot(env, policy):
+def init_plot(env, policy, max_path_length):
+    init_worker()
     queue.put(['update', env, policy])
 
 

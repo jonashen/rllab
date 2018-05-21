@@ -108,8 +108,9 @@ class BatchPolopt(RLAlgorithm):
     def start_worker(self):
         self.sampler.start_worker()
         if self.plot:
-            plotter.init_worker()
-            plotter.init_plot(self.env, self.policy)
+            plotter.init_plot(self.env, self.policy, self.max_path_length)
+            # Call rollout once to display glfw window
+            rollout(self.env, self.policy, animated=True, max_path_length=self.max_path_length)
 
     def shutdown_worker(self):
         self.sampler.shutdown_worker()
@@ -133,14 +134,10 @@ class BatchPolopt(RLAlgorithm):
                 logger.log("saved")
                 logger.dump_tabular(with_prefix=False)
                 if self.plot:
-                    # self.update_plot()
-                    # if self.pause_for_plot:
-                    #     input("Plotting evaluation run: Press Enter to "
-                    #               "continue...")
-                    rollout(self.env, self.policy, animated=True, max_path_length=self.max_path_length)
+                    self.update_plot()
                     if self.pause_for_plot:
                         input("Plotting evaluation run: Press Enter to "
-                              "continue...")
+                                  "continue...")
 
         self.shutdown_worker()
 
