@@ -130,7 +130,12 @@ class BatchPolopt(RLAlgorithm):
                 logger.log("saved")
                 logger.dump_tabular(with_prefix=False)
                 if self.plot:
-                    rollout(self.env, self.policy, max_path_length=self.max_path_length, animated=True, speedup=5)
+                    rollout(
+                        self.env,
+                        self.policy,
+                        max_path_length=self.max_path_length,
+                        animated=True,
+                        speedup=5)
                     if self.pause_for_plot:
                         input("Plotting evaluation run: Press Enter to "
                               "continue...")
