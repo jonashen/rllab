@@ -6,7 +6,7 @@ import traceback
 import logging
 
 try:
-    from gym.wrappers.monitoring import logger as monitor_logger
+    from gym import logger as monitor_logger
 
     monitor_logger.setLevel(logging.WARNING)
 except Exception as e:
